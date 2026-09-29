@@ -45,7 +45,7 @@ body {
   width: 150%;
   height: 80%;
   background: var(--hill);
-  border-radius: 50%;
+  border-radius: 45%;
   z-index: 1;
 }
 
@@ -76,8 +76,8 @@ body {
 .dots::before,
 .dots::after {
   content: "";
-  width: 0.7vw;
-  height: 0.7vw;
+  width: 0.4vw;
+  height: 0.4vw;
   background: var(--dots);
   transform: rotate(45deg);
 }
@@ -90,10 +90,10 @@ body {
   top: 61vh;
   bottom: 6vh;
   left: 4vw;
-  right: 2.5vw;
+  right: 4vw;              /* same as left, so everything is centered */
   z-index: 2;
   display: grid;
-  grid-template-columns: 32.8vw 38.8vw 21.9vw;
+  grid-template-columns: 32.8vw 37.5vw 21.7vw;   /* adds up to 92vw */
   font-family: "IBM Plex Mono", monospace;
   font-size: clamp(12px, 0.85vw, 18px);
   color: var(--ink);
@@ -114,6 +114,7 @@ body {
 #date {
   margin: 0 0 1.2em;
   font-size: 1.6em;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.55);     /* soft white glow */
 }
 
 #greeting {
@@ -123,6 +124,7 @@ body {
   font-size: 5vw;          /* make this smaller if a greeting is still too wide */
   white-space: nowrap;     /* never split onto two lines */
   line-height: 1.1;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.25);   /* soft white glow */
 }
 
 /* middle and right columns: a heading, then a box that fills the rest */
@@ -278,17 +280,18 @@ body {
   border-right: 2px solid #ffffff;
   border-bottom: 2px solid #ffffff;
   transform: rotate(45deg);
+  border-radius: 2px;
 }
 
 /* ---------- TO-DO ---------- */
 #todo {
   padding-left: 5.2vw;     /* space between Today and To-Do */
 }
-
+ 
 #todo h2 {
   padding-left: 0.65em;
 }
-
+ 
 .todo-panel {
   flex: 1;
   min-height: 0;
@@ -299,14 +302,14 @@ body {
   border-radius: 6px;
   scrollbar-width: none;
 }
-
+ 
 .todo-item {
   display: flex;
   align-items: center;
   min-height: 2.4em;
   margin-bottom: 0.8em;
 }
-
+ 
 /* the checkbox */
 .todo-item input[type="checkbox"] {
   -webkit-appearance: none;
@@ -320,11 +323,11 @@ body {
   background: none;
   cursor: pointer;
 }
-
+ 
 .todo-item input[type="checkbox"]:checked {
   background: #ffffff;
 }
-
+ 
 /* the text you can type in */
 .todo-text {
   flex: 1;
@@ -336,21 +339,21 @@ body {
   color: inherit;
   font: inherit;
 }
-
+ 
 .todo-text:focus {
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
-
+ 
 .todo-text::placeholder {
   color: inherit;
   opacity: 0.5;
 }
-
+ 
 .todo-item.done .todo-text {
   text-decoration: line-through;
   opacity: 0.5;
 }
-
+ 
 /* the little x, shows when you hover over a row */
 .todo-delete {
   border: 0;
@@ -361,51 +364,36 @@ body {
   cursor: pointer;
   opacity: 0;
 }
-
+ 
 .todo-item:hover .todo-delete,
 .todo-delete:focus {
   opacity: 0.7;
 }
-
-/* the thin "+" (drawn with two lines) */
+ 
+/* the add button: a small 4-pointed star (a picture drawn in the code below) */
 #add-todo {
-  position: relative;
   display: block;
-  width: 1.6em;
-  height: 1.6em;
-  margin: 0.3em 0 0 -0.2em;
+  width: 1vw;
+  height: 1vw;
+  margin: 0.4em 0 0 -0.125em;      /* lines up under the checkboxes */
   border: 0;
-  background: none;
-  font-size: 0;            /* hides the "+" letter, we draw our own */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M12 0C12.8 7 17 11.2 24 12C17 12.8 12.8 17 12 24C11.2 17 7 12.8 0 12C7 11.2 11.2 7 12 0Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  font-size: 0;                    /* hides the "+" letter in the HTML */
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));   /* tiny glow, like the greeting */
   cursor: pointer;
+  transition: transform 0.15s;
 }
-
-#add-todo::before,
-#add-todo::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #ffffff;
+ 
+#add-todo:hover {
+  transform: scale(1.2);
 }
-
-#add-todo::before {
-  width: 100%;
-  height: 2px;
-}
-
-#add-todo::after {
-  width: 2px;
-  height: 100%;
-}
-
+ 
 /* ---------- SHOOTING STARS ---------- */
 .star {
   position: absolute;
   width: 8vw;
   height: 2px;
-  background: linear-gradient(to left, white, transparent);
+  background: linear-gradient(to right, white, transparent);   /* bright head on the left, tail fades to the right */
   opacity: 0;
   animation: shoot 8s linear infinite;
 }
