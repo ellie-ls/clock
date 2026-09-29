@@ -8,6 +8,7 @@ body {
   --dots: #cfeff7;
   --ink: #ffffff;                        /* text color */
   --card: rgba(255, 255, 255, 0.2);      /* box color */
+  --border: rgba(255, 255, 255, 0.22);   /* the thin outline on boxes */
 }
 
 /* ---------- PAGE ---------- */
@@ -44,7 +45,7 @@ body {
   width: 150%;
   height: 80%;
   background: var(--hill);
-  border-radius: 45%;
+  border-radius: 50%;
   z-index: 1;
 }
 
@@ -75,24 +76,24 @@ body {
 .dots::before,
 .dots::after {
   content: "";
-  width: 0.4vw;
-  height: 0.4vw;
+  width: 0.7vw;
+  height: 0.7vw;
   background: var(--dots);
   transform: rotate(45deg);
 }
 
 /* ---------- DASHBOARD (bottom part) ---------- */
-/* everything in here is sized in "em", so changing font-size below scales it all */
+/* Three columns: date + greeting | Today | To-Do
+   Everything inside is sized in "em", so changing font-size below scales it all. */
 #dashboard {
   position: absolute;
-  top: 60vh;
-  bottom: 4.5vh;
-  left: 5.5vw;
-  right: 6.5vw;
+  top: 61vh;
+  bottom: 6vh;
+  left: 4vw;
+  right: 2.5vw;
   z-index: 2;
   display: grid;
-  grid-template-columns: 36% 36% 17%;
-  justify-content: space-between;
+  grid-template-columns: 32.8vw 38.8vw 21.9vw;
   font-family: "IBM Plex Mono", monospace;
   font-size: clamp(12px, 0.85vw, 18px);
   color: var(--ink);
@@ -133,6 +134,12 @@ body {
 }
 
 /* ---------- TODAY (calendar) ---------- */
+/* The Today column starts a little to the left of the circles.
+   That extra space is where the time labels go. */
+#today h2 {
+  padding-left: 2.74em;    /* lines the heading up with the circles */
+}
+
 #today-scroll {
   flex: 1;
   min-height: 0;
@@ -144,22 +151,25 @@ body {
   display: none;
 }
 
-/* the left padding leaves room for the time labels and the circles */
+/* the left padding = room for the time labels + circles */
 #events {
   position: relative;
   padding: 1em 0 1em 8.4em;
 }
 
-/* one row = time label + circle + box */
+/* one row = time label + circle + box. Text is a little smaller here (0.9em). */
 .event {
   position: relative;
-  margin-bottom: 0.8em;
+  margin-bottom: 0.9em;
+  font-size: 0.9em;
 }
 
+/* the box */
 .event-card {
-  padding: 0.8em 1.1em;
+  padding: 0.7em 1.1em;
   background: var(--card);
-  border-radius: 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
 }
 
 .event-title,
@@ -170,29 +180,17 @@ body {
 }
 
 .event-info {
-  margin-top: 0.3em;
+  margin-top: 0.15em;
   opacity: 0.8;
 }
 
-/* the time, to the left of the circle */
-.event-time {
-  position: absolute;
-  left: -8.4em;
-  width: 5.3em;
-  top: 50%;
-  transform: translateY(-50%);
-  text-align: right;
-  white-space: nowrap;
-}
-
-/* the circle (empty = coming up) */
+/* the circle sits at the top-left corner of its box (empty = coming up) */
 .event-dot {
   position: absolute;
-  left: -2.6em;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1.1em;
-  height: 1.1em;
+  left: -3.25em;
+  top: -0.14em;
+  width: 1.28em;
+  height: 1.28em;
   box-sizing: border-box;
   border: 2px solid #ffffff;
   border-radius: 50%;
@@ -200,14 +198,14 @@ body {
   z-index: 1;
 }
 
-/* happening now = a small circle inside */
+/* happening now = a smaller circle inside */
 .event.current .event-dot::after {
   content: "";
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 0.4em;
-  height: 0.4em;
+  width: 0.45em;
+  height: 0.45em;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: #ffffff;
@@ -226,19 +224,30 @@ body {
   opacity: 0.6;
 }
 
-/* the vertical line (only between the first and last circle) */
+/* the time, to the left of the circle, lined up with the circle */
+.event-time {
+  position: absolute;
+  left: -9.22em;
+  width: 5.44em;
+  top: -0.14em;
+  height: 1.28em;
+  line-height: 1.28em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* the vertical line (only between the first and last circle).
+   script.js sets exactly where it goes so it lines up with the circles. */
 .timeline-line {
   position: absolute;
-  left: -2.05em;
   width: 2px;
-  margin-left: -1px;
   background: #ffffff;
 }
 
-/* the dashed line = right now. It moves down as time passes */
+/* the dashed line = right now. It starts exactly at the vertical line
+   and moves down as time passes. */
 .now-line {
   position: absolute;
-  left: -2.05em;
   right: 0;
   height: 0;
   border-top: 1px dashed #ffffff;
@@ -246,16 +255,16 @@ body {
 }
 
 .empty {
-  margin-left: -8.4em;
+  margin-left: -2.9em;
   opacity: 0.8;
 }
 
-/* the arrow at the bottom that scrolls to more events */
+/* the caret at the bottom that scrolls to more events (script.js lines it up under the circles) */
 #more {
   flex: none;
   visibility: hidden;
   align-self: flex-start;
-  margin-left: 4.9em;   /* lines up under the circles */
+  margin-left: 5em;
   padding: 0.5em 0.7em;
   border: 0;
   background: none;
@@ -264,29 +273,38 @@ body {
 
 #more span {
   display: block;
-  width: 0.8em;
-  height: 0.8em;
+  width: 0.7em;
+  height: 0.7em;
   border-right: 2px solid #ffffff;
   border-bottom: 2px solid #ffffff;
   transform: rotate(45deg);
 }
 
 /* ---------- TO-DO ---------- */
+#todo {
+  padding-left: 5.2vw;     /* space between Today and To-Do */
+}
+
+#todo h2 {
+  padding-left: 0.65em;
+}
+
 .todo-panel {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 0.8em 1.1em;
+  padding: 1.1em 1.3em;
   background: var(--card);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
   scrollbar-width: none;
 }
 
 .todo-item {
   display: flex;
   align-items: center;
-  margin-bottom: 0.5em;
+  min-height: 2.4em;
+  margin-bottom: 0.8em;
 }
 
 /* the checkbox */
@@ -294,17 +312,17 @@ body {
   -webkit-appearance: none;
   appearance: none;
   flex: none;
-  width: 1.2em;
-  height: 1.2em;
-  margin: 0 1em 0 0;
-  border: 2px solid var(--ink);
+  width: 1.15em;
+  height: 1.15em;
+  margin: 0 1.4em 0 0;
+  border: 1.5px solid #ffffff;
   border-radius: 3px;
   background: none;
   cursor: pointer;
 }
 
 .todo-item input[type="checkbox"]:checked {
-  background: var(--ink);
+  background: #ffffff;
 }
 
 /* the text you can type in */
@@ -320,7 +338,7 @@ body {
 }
 
 .todo-text:focus {
-  box-shadow: 0 1px 0 var(--ink);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .todo-text::placeholder {
@@ -349,17 +367,40 @@ body {
   opacity: 0.7;
 }
 
+/* the thin "+" (drawn with two lines) */
 #add-todo {
+  position: relative;
+  display: block;
+  width: 1.6em;
+  height: 1.6em;
+  margin: 0.3em 0 0 -0.2em;
   border: 0;
   background: none;
-  color: inherit;
-  font: inherit;
-  font-size: 2.4em;
-  line-height: 1;
+  font-size: 0;            /* hides the "+" letter, we draw our own */
   cursor: pointer;
 }
 
-/* ---------- SHOOTING STARS (night only) ---------- */
+#add-todo::before,
+#add-todo::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+}
+
+#add-todo::before {
+  width: 100%;
+  height: 2px;
+}
+
+#add-todo::after {
+  width: 2px;
+  height: 100%;
+}
+
+/* ---------- SHOOTING STARS ---------- */
 .star {
   position: absolute;
   width: 8vw;

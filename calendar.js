@@ -90,22 +90,8 @@ function parseCalendar(text) {
   return events;
 }
 
-// Does a repeating event happen on this day? (start = the time it would start that day)
-function repeatsOnDay(ev, dayStart, occurrenceStart) {
-  var firstDay = new Date(ev.start.getFullYear(), ev.start.getMonth(), ev.start.getDate());
-  if (dayStart < firstDay) { return false; }
-
-  // turn "FREQ=WEEKLY;BYDAY=MO" into rule.FREQ and rule.BYDAY
-  var rule = {};
-  var parts = ev.rrule.split(";");
-  for (var i = 0; i < parts.length; i++) {
-    var pair = parts[i].split("=");
-    rule[pair[0]] = pair[1];
-  }
-
-  // stop after the UNTIL date
-  if (rule.UNTIL && occurrenceStart > parseIcsDate(rule.UNTIL).date) { return false; }
-
+// Does the repeat pattern (like "every Monday") match this day? (ignores UNTIL and COUNT)
+function patternMatches(ev, rule, dayStart, firstDay) {
   var interval = Number(rule.INTERVAL || 1);
   var daysBetween = Math.round((dayStart - firstDay) / 86400000);
 
@@ -125,6 +111,41 @@ function repeatsOnDay(ev, dayStart, occurrenceStart) {
     return dayStart.getMonth() === ev.start.getMonth() && dayStart.getDate() === ev.start.getDate();
   }
   return false;
+}
+
+// Does a repeating event happen on this day? (occurrenceStart = the time it would start that day)
+function repeatsOnDay(ev, dayStart, occurrenceStart) {
+  var firstDay = new Date(ev.start.getFullYear(), ev.start.getMonth(), ev.start.getDate());
+  if (dayStart < firstDay) { return false; }
+
+  // turn "FREQ=WEEKLY;BYDAY=MO" into rule.FREQ and rule.BYDAY
+  var rule = {};
+  var parts = ev.rrule.split(";");
+  for (var i = 0; i < parts.length; i++) {
+    var pair = parts[i].split("=");
+    rule[pair[0]] = pair[1];
+  }
+
+  // stop after the UNTIL date
+  if (rule.UNTIL && occurrenceStart > parseIcsDate(rule.UNTIL).date) { return false; }
+
+  if (!patternMatches(ev, rule, dayStart, firstDay)) { return false; }
+
+  // COUNT means "only repeat this many times" (class schedules often use this).
+  // Count the matching days from the start up to this day.
+  if (rule.COUNT) {
+    var count = 0;
+    var day = new Date(firstDay);
+    while (day <= dayStart) {
+      if (patternMatches(ev, rule, day, firstDay)) {
+        count = count + 1;
+      }
+      day.setDate(day.getDate() + 1);
+    }
+    if (count > Number(rule.COUNT)) { return false; }
+  }
+
+  return true;
 }
 
 // Returns the events that happen on one day, in time order
@@ -180,5 +201,19 @@ function getEventsForDay(events, day) {
   }
 
   found.sort(function (a, b) { return a.start - b.start; });
-  return found;
+
+  // if two calendars have the exact same event, only keep one
+  var unique = [];
+  for (var m = 0; m < found.length; m++) {
+    var isCopy = false;
+    for (var n = 0; n < unique.length; n++) {
+      if (unique[n].title === found[m].title
+          && unique[n].start.getTime() === found[m].start.getTime()
+          && unique[n].end.getTime() === found[m].end.getTime()) {
+        isCopy = true;
+      }
+    }
+    if (!isCopy) { unique.push(found[m]); }
+  }
+  return unique;
 }

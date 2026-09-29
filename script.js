@@ -105,12 +105,22 @@ function updateClock() {
 /*  TODAY (calendar)                                          */
 /* ---------------------------------------------------------- */
 
-var allEvents = [];        // every event from calendar.ics
+// The calendar files to read. To add another calendar, put its file in the folder and add its name here.
+var calendarFiles = ["calendar.ics", "classes.ics"];
+
+var allEvents = [];        // every event from all the calendar files
+var calendarProblems = []; // messages about files that could not be read
 var firstTimeShowing = true;
 
 // "6:30 PM"
 function formatTime(date) {
   return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+
+// Text about any calendar file that could not be read (empty when everything is fine)
+function problemText() {
+  if (calendarProblems.length === 0) { return ""; }
+  return " Problem: " + calendarProblems.join(". ");
 }
 
 // Shows the arrow at the bottom only when there are more events below
@@ -125,24 +135,33 @@ function updateMoreButton() {
 }
 
 // Draws the vertical line and the dashed "now" line.
-// rows = a list of { ev: the event, row: its box on the page }
+// rows = a list of { ev: the event, row: its row on the page, dot: its circle }
 // Returns how far down the dashed line is (in pixels), or null if there isn't one.
+// It also remembers how far from the left the circles are (in timelineX).
+var timelineX = 0;
+
 function drawTimeline(rows, now, box) {
   var fontSize = parseFloat(window.getComputedStyle(box).fontSize);
   if (isNaN(fontSize)) { fontSize = 12; }
   var halfGap = fontSize * 0.4;   // half of the space between two boxes
 
+  // Find the exact middle of the first and last circle (measured on the page,
+  // so the lines always line up with the circles)
+  var boxRect = box.getBoundingClientRect();
+  var firstRect = rows[0].dot.getBoundingClientRect();
+  var lastRect = rows[rows.length - 1].dot.getBoundingClientRect();
+  var centerX = firstRect.left + firstRect.width / 2 - boxRect.left;
+  var firstY = firstRect.top + firstRect.height / 2 - boxRect.top;
+  var lastY = lastRect.top + lastRect.height / 2 - boxRect.top;
+  timelineX = centerX;
+
   // the vertical line goes from the first circle to the last circle (nothing after the last one)
   if (rows.length > 1) {
-    var first = rows[0].row;
-    var last = rows[rows.length - 1].row;
-    var top = first.offsetTop + first.offsetHeight / 2;
-    var bottom = last.offsetTop + last.offsetHeight / 2;
-
     var line = document.createElement("div");
     line.className = "timeline-line";
-    line.style.top = top + "px";
-    line.style.height = (bottom - top) + "px";
+    line.style.left = (centerX - 1) + "px";   // the line is 2px wide, so back up 1px to center it
+    line.style.top = firstY + "px";
+    line.style.height = (lastY - firstY) + "px";
     box.appendChild(line);
   }
 
@@ -196,8 +215,10 @@ function drawTimeline(rows, now, box) {
     }
   }
 
+  // the dashed line starts exactly in the middle of the vertical line and goes right
   var nowLine = document.createElement("div");
   nowLine.className = "now-line";
+  nowLine.style.left = centerX + "px";
   nowLine.style.top = y + "px";
   box.appendChild(nowLine);
   return y;
@@ -214,7 +235,7 @@ function showToday() {
   box.innerHTML = "";
 
   if (events.length === 0) {
-    showCalendarMessage("Nothing on the calendar today. (" + allEvents.length + " events read from calendar.ics)");
+    showCalendarMessage("Nothing on the calendar today. (" + allEvents.length + " events read)" + problemText());
     updateMoreButton();
     return;
   }
@@ -273,10 +294,22 @@ function showToday() {
     row.appendChild(dot);
     row.appendChild(card);
     box.appendChild(row);
-    rows.push({ ev: ev, row: row });
+    rows.push({ ev: ev, row: row, dot: dot });
   }
 
   var nowY = drawTimeline(rows, now, box);
+
+  // put the caret right under the circles
+  var more = document.getElementById("more");
+  more.style.marginLeft = (timelineX - more.offsetWidth / 2) + "px";
+
+  // if a calendar file could not be read, say so at the bottom of the list
+  if (calendarProblems.length > 0) {
+    var note = document.createElement("div");
+    note.className = "empty";
+    note.textContent = "Problem: " + calendarProblems.join(". ");
+    box.appendChild(note);
+  }
 
   // first time: scroll so the dashed line is near the top. After that: stay where you were.
   if (firstTimeShowing) {
@@ -295,11 +328,32 @@ function showCalendarMessage(message) {
   document.getElementById("events").innerHTML = '<div class="empty">' + message + '</div>';
 }
 
-// Loads calendar.ics from the project folder
+// Reads one calendar file and gives back its list of events
+function loadOneCalendar(fileName) {
+  return fetch(fileName)
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error(fileName + " was not found in the folder next to index.html");
+      }
+      return response.text();
+    })
+    .then(function (text) {
+      var events = parseCalendar(text);
+      console.log("Read " + events.length + " events from " + fileName);
+      return events;
+    })
+    .catch(function (error) {
+      console.log(error);
+      calendarProblems.push(error.message);
+      return [];   // skip this file, keep going with the others
+    });
+}
+
+// Loads every file in calendarFiles and puts all the events together
 function loadCalendar() {
-  // opening index.html by double-clicking it (file://) blocks reading calendar.ics
+  // opening index.html by double-clicking it (file://) blocks reading the calendar files
   if (window.location.protocol === "file:") {
-    showCalendarMessage("Open this page with Live Server (right-click index.html in VS Code). Double-clicking it can't read calendar.ics.");
+    showCalendarMessage("Open this page with Live Server (right-click index.html in VS Code). Double-clicking it can't read the calendar files.");
     return;
   }
 
@@ -309,22 +363,18 @@ function loadCalendar() {
     return;
   }
 
-  fetch("calendar.ics")
-    .then(function (response) {
-      if (!response.ok) {
-        throw new Error("calendar.ics was not found in the folder next to index.html");
-      }
-      return response.text();
-    })
-    .then(function (text) {
-      allEvents = parseCalendar(text);
-      console.log("Read " + allEvents.length + " events from calendar.ics");
-      showToday();
-    })
-    .catch(function (error) {
-      console.log(error);
-      showCalendarMessage("Calendar problem: " + error.message);
-    });
+  var requests = [];
+  for (var i = 0; i < calendarFiles.length; i++) {
+    requests.push(loadOneCalendar(calendarFiles[i]));
+  }
+
+  Promise.all(requests).then(function (lists) {
+    allEvents = [];
+    for (var j = 0; j < lists.length; j++) {
+      allEvents = allEvents.concat(lists[j]);
+    }
+    showToday();
+  });
 }
 
 /* ---------------------------------------------------------- */
