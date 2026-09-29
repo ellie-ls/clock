@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preview tomorrow</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: sans-serif;
+      background: #f4f4f4;
+    }
+    #bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      flex-wrap: wrap;
+    }
+    #label {
+      min-width: 190px;
+      font-weight: bold;
+    }
+    #slider {
+      flex: 1;
+      min-width: 200px;
+    }
+    iframe {
+      flex: 1;
+      border: 0;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="bar">
+    <span id="label"></span>
+    <input id="slider" type="range" min="0" max="1439" step="5" value="480">
+    <button onclick="jump(420)">7 AM</button>
+    <button onclick="jump(720)">12 PM</button>
+    <button onclick="jump(960)">4 PM</button>
+    <button onclick="jump(1080)">6 PM</button>
+    <button onclick="jump(1260)">9 PM</button>
+    <button onclick="jump(1410)">11:30 PM</button>
+  </div>
+
+  <iframe id="frame"></iframe>
+
+  <script>
+    var slider = document.getElementById("slider");
+    var label = document.getElementById("label");
+    var frame = document.getElementById("frame");
+
+    // tomorrow's date
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // puts a 0 in front of small numbers (5 becomes "05")
+    function twoDigits(n) {
+      if (n < 10) {
+        return "0" + n;
+      }
+      return String(n);
+    }
+
+    var dateText = tomorrow.getFullYear() + "-" + twoDigits(tomorrow.getMonth() + 1) + "-" + twoDigits(tomorrow.getDate());
+
+    // the words shown on the left, like "Tue Sep 29 - 6:30 PM"
+    function updateLabel() {
+      var minutes = Number(slider.value);
+      var t = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), Math.floor(minutes / 60), minutes % 60);
+      label.textContent = t.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+        + " - " + t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    }
+
+    // loads the clock page pretending it is that time
+    function showTime() {
+      var minutes = Number(slider.value);
+      frame.src = "index.html?time=" + dateText + "T" + twoDigits(Math.floor(minutes / 60)) + ":" + twoDigits(minutes % 60);
+    }
+
+    function jump(minutes) {
+      slider.value = minutes;
+      updateLabel();
+      showTime();
+    }
+
+    slider.oninput = updateLabel;     // while dragging: just change the words
+    slider.onchange = showTime;       // when you let go: reload the clock
+
+    updateLabel();
+    showTime();
+  </script>
+
+</body>
+</html>

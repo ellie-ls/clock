@@ -1,0 +1,381 @@
+/* ---------- COLORS ---------- */
+/* one look: night time */
+
+body {
+  --sky-top: #1b4455;
+  --sky-bottom: #2f7088;
+  --hill: #1a3520;
+  --dots: #cfeff7;
+  --ink: #ffffff;                        /* text color */
+  --card: rgba(255, 255, 255, 0.2);      /* box color */
+}
+
+/* ---------- PAGE ---------- */
+html {
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(var(--sky-top), var(--sky-bottom));
+}
+
+/* ---------- THE SCENE (hill + stars) ---------- */
+/* The hill is wider than the screen on purpose. This box hides the extra part,
+   so the page can never slide sideways. */
+#scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ---------- THE HILL ---------- */
+.hill {
+  position: absolute;
+  top: 48%;
+  left: -25%;
+  width: 150%;
+  height: 80%;
+  background: var(--hill);
+  border-radius: 45%;
+  z-index: 1;
+}
+
+/* ---------- THE CLOCK ---------- */
+#clock {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.2vw;
+}
+
+#clock img {
+  width: 14vw;
+  height: auto;
+}
+
+/* the ":" (two diamonds stacked) */
+.dots {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vw;
+}
+
+.dots::before,
+.dots::after {
+  content: "";
+  width: 0.4vw;
+  height: 0.4vw;
+  background: var(--dots);
+  transform: rotate(45deg);
+}
+
+/* ---------- DASHBOARD (bottom part) ---------- */
+/* everything in here is sized in "em", so changing font-size below scales it all */
+#dashboard {
+  position: absolute;
+  top: 60vh;
+  bottom: 4.5vh;
+  left: 5.5vw;
+  right: 6.5vw;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 36% 36% 17%;
+  justify-content: space-between;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(12px, 0.85vw, 18px);
+  color: var(--ink);
+}
+
+#dashboard h2 {
+  margin: 0 0 0.6em;
+  font-size: 2em;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+}
+
+/* left column: date + greeting, sitting at the bottom */
+#welcome {
+  align-self: end;
+}
+
+#date {
+  margin: 0 0 1.2em;
+  font-size: 1.6em;
+}
+
+#greeting {
+  margin: 0;
+  font-family: "Pinyon Script", cursive;
+  font-weight: 400;
+  font-size: 5vw;          /* make this smaller if a greeting is still too wide */
+  white-space: nowrap;     /* never split onto two lines */
+  line-height: 1.1;
+}
+
+/* middle and right columns: a heading, then a box that fills the rest */
+#today,
+#todo {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ---------- TODAY (calendar) ---------- */
+#today-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+#today-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* the left padding leaves room for the time labels and the circles */
+#events {
+  position: relative;
+  padding: 1em 0 1em 8.4em;
+}
+
+/* one row = time label + circle + box */
+.event {
+  position: relative;
+  margin-bottom: 0.8em;
+}
+
+.event-card {
+  padding: 0.8em 1.1em;
+  background: var(--card);
+  border-radius: 6px;
+}
+
+.event-title,
+.event-info {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-info {
+  margin-top: 0.3em;
+  opacity: 0.8;
+}
+
+/* the time, to the left of the circle */
+.event-time {
+  position: absolute;
+  left: -8.4em;
+  width: 5.3em;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* the circle (empty = coming up) */
+.event-dot {
+  position: absolute;
+  left: -2.6em;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.1em;
+  height: 1.1em;
+  box-sizing: border-box;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: var(--hill);
+  z-index: 1;
+}
+
+/* happening now = a small circle inside */
+.event.current .event-dot::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.4em;
+  height: 0.4em;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+/* done = filled circle, faded box */
+.event.past .event-dot {
+  background: #ffffff;
+}
+
+.event.past .event-card {
+  opacity: 0.45;
+}
+
+.event.past .event-time {
+  opacity: 0.6;
+}
+
+/* the vertical line (only between the first and last circle) */
+.timeline-line {
+  position: absolute;
+  left: -2.05em;
+  width: 2px;
+  margin-left: -1px;
+  background: #ffffff;
+}
+
+/* the dashed line = right now. It moves down as time passes */
+.now-line {
+  position: absolute;
+  left: -2.05em;
+  right: 0;
+  height: 0;
+  border-top: 1px dashed #ffffff;
+  z-index: 2;
+}
+
+.empty {
+  margin-left: -8.4em;
+  opacity: 0.8;
+}
+
+/* the arrow at the bottom that scrolls to more events */
+#more {
+  flex: none;
+  visibility: hidden;
+  align-self: flex-start;
+  margin-left: 4.9em;   /* lines up under the circles */
+  padding: 0.5em 0.7em;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+#more span {
+  display: block;
+  width: 0.8em;
+  height: 0.8em;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(45deg);
+}
+
+/* ---------- TO-DO ---------- */
+.todo-panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.8em 1.1em;
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  scrollbar-width: none;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5em;
+}
+
+/* the checkbox */
+.todo-item input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: none;
+  width: 1.2em;
+  height: 1.2em;
+  margin: 0 1em 0 0;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  background: none;
+  cursor: pointer;
+}
+
+.todo-item input[type="checkbox"]:checked {
+  background: var(--ink);
+}
+
+/* the text you can type in */
+.todo-text {
+  flex: 1;
+  min-width: 0;
+  padding: 0.3em 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+.todo-text:focus {
+  box-shadow: 0 1px 0 var(--ink);
+}
+
+.todo-text::placeholder {
+  color: inherit;
+  opacity: 0.5;
+}
+
+.todo-item.done .todo-text {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+/* the little x, shows when you hover over a row */
+.todo-delete {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 1.4em;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.todo-item:hover .todo-delete,
+.todo-delete:focus {
+  opacity: 0.7;
+}
+
+#add-todo {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 2.4em;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* ---------- SHOOTING STARS (night only) ---------- */
+.star {
+  position: absolute;
+  width: 8vw;
+  height: 2px;
+  background: linear-gradient(to left, white, transparent);
+  opacity: 0;
+  animation: shoot 8s linear infinite;
+}
+
+.s1 { top: 8%;  left: 75%; }
+.s2 { top: 20%; left: 45%; animation-delay: 3s; animation-duration: 11s; }
+.s3 { top: 14%; left: 95%; animation-delay: 6s; animation-duration: 9s; }
+
+@keyframes shoot {
+  0%   { transform: rotate(-25deg) translateX(0);     opacity: 0; }
+  3%   { opacity: 1; }
+  12%  { transform: rotate(-25deg) translateX(-35vw); opacity: 0; }
+  100% { transform: rotate(-25deg) translateX(-35vw); opacity: 0; }
+}

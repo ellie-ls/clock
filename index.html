@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Horse Clock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- the sky stuff: this box cuts off anything that sticks out past the screen -->
+  <div id="scene">
+    <!-- shooting stars (night only) -->
+    <div class="star s1"></div>
+    <div class="star s2"></div>
+    <div class="star s3"></div>
+
+    <!-- the hill -->
+    <div class="hill"></div>
+  </div>
+
+  <!-- the clock -->
+  <div id="clock">
+    <img id="h1" src="images/0.png" alt="hour digit 1">
+    <img id="h2" src="images/0.png" alt="hour digit 2">
+
+    <span class="dots"></span>
+
+    <img id="m1" src="images/0.png" alt="minute digit 1">
+    <img id="m2" src="images/0.png" alt="minute digit 2">
+
+    <span class="dots"></span>
+
+    <img id="s1" src="images/0.png" alt="second digit 1">
+    <img id="s2" src="images/0.png" alt="second digit 2">
+  </div>
+
+  <!-- the bottom part: date + greeting, Today, To-Do -->
+  <div id="dashboard">
+
+    <div id="welcome">
+      <p id="date"></p>
+      <h1 id="greeting"></h1>
+    </div>
+
+    <div id="today">
+      <h2>Today</h2>
+      <div id="today-scroll">
+        <div id="events"></div>
+      </div>
+      <button id="more" aria-label="Show more events"><span></span></button>
+    </div>
+
+    <div id="todo">
+      <h2>To - Do</h2>
+      <div class="todo-panel">
+        <div id="todo-list"></div>
+        <button id="add-todo" aria-label="Add a to-do">+</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="calendar.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
