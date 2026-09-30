@@ -2,9 +2,9 @@
 /* one look: night time */
 
 body {
-  --sky-top: #1b4455;
-  --sky-bottom: #2f7088;
-  --hill: #1a3520;
+  --sky-top: #0a3243;
+  --sky-bottom: #3085a4;
+  --hill: radial-gradient(72.93% 72.93% at 50.01% 27.07%, #163013 0%, #002720 100%);
   --dots: #cfeff7;
   --ink: #ffffff;                        /* text color */
   --card: rgba(255, 255, 255, 0.2);      /* box color */
